@@ -18,6 +18,8 @@ if (!fs.existsSync(IMAGE_FOLDER)) {
 
 app.get("/:prompt", async (req, res) => {
   const prompt = req.params.prompt.replace(/-/g, " ");
+  console.log("prompt: ", prompt);
+
   const imagePath = path.join(IMAGE_FOLDER, `${req.params.prompt}.png`);
 
   // Check if the image already exists
