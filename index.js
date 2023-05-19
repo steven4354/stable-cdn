@@ -24,7 +24,7 @@ app.get("/:prompt", async (req, res) => {
 
   // Check if the image already exists
   if (fs.existsSync(imagePath)) {
-    res.sendFile(imagePath);
+    res.sendFile(path.resolve(imagePath));
   } else {
     // Generate the image using Replicate API
     const response = await axios.post(
