@@ -22,6 +22,8 @@ app.get("/:prompt", async (req, res) => {
 
   const imagePath = path.join(IMAGE_FOLDER, `${req.params.prompt}.png`);
 
+  console.log("imagePath: ", imagePath);
+
   // Check if the image already exists
   if (fs.existsSync(imagePath)) {
     res.sendFile(path.resolve(imagePath));
