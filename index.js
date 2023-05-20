@@ -78,6 +78,29 @@ app.get("/:prompt", async (req, res) => {
   }
 });
 
+app.get("/unsplash/:search", async (req, res) => {
+  const searchQuery = req.params.search.replace(/-/g, " ");
+  console.log("searchQuery: ", searchQuery);
+
+  try {
+    const response = await axios.get(
+      `https://api.unsplash.com/search/photos?query=${encodeURIComponent(
+        searchQuery
+      )}&client_id=${process.env.UNSPLASH_API_KEY}&per_page=1`
+    );
+
+    if (response.data.results.length > 0) {
+      const imageUrl = response.data.results[0].urls.regular;
+      res.redirect(imageUrl);
+    } else {
+      res.status(404).send("No image found for the given search query.");
+    }
+  } catch (error) {
+    console.error("Error fetching image from Unsplash:", error);
+    res.status(500).send("Error fetching image from Unsplash.");
+  }
+});
+
 const PORT = process.env.PORT || 5683;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
