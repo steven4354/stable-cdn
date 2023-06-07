@@ -33,6 +33,7 @@ const waitingCalls = [];
 
 async function handleMidjourneyCall(req, res) {
   const prompt = req.params.prompt.replace(/-/g, " ");
+  const imagePath = path.join(IMAGE_FOLDER, `${req.params.prompt}.png`);
 
   if (currentCalls >= maxConcurrentCalls) {
     await new Promise((resolve) => waitingCalls.push(resolve));
