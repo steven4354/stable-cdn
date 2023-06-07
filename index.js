@@ -26,6 +26,36 @@ if (!fs.existsSync(IMAGE_FOLDER)) {
   fs.mkdirSync(IMAGE_FOLDER);
 }
 
+async function handleMidjourneyCall(req, res) {
+  if (currentCalls >= maxConcurrentCalls) {
+    await new Promise((resolve) => waitingCalls.push(resolve));
+  }
+
+  currentCalls++;
+
+  try {
+    const msg = await client.Imagine(prompt);
+
+    const msg2 = await client.Upscale(msg.content, 2, msg.id, msg.hash);
+
+    console.log({ msg });
+
+    // Download the generated image
+    const imageResponse = await axios.get(msg2.uri, {
+      responseType: "arraybuffer",
+    });
+
+    // Save the downloaded image to the local folder
+    await fs.promises.writeFile(imagePath, imageResponse.data);
+  } finally {
+    currentCalls--;
+
+    if (waitingCalls.length > 0) {
+      waitingCalls.shift()();
+    }
+  }
+}
+
 // The best at the top!
 app.get("/:prompt", async (req, res) => {
   console.log("req.params: ", req.params);
@@ -40,31 +70,12 @@ app.get("/:prompt", async (req, res) => {
     res.sendFile(path.resolve(imagePath));
   } else {
     console.log("Generating new image");
-    const msg = await client.Imagine(prompt);
-
-    const msg2 = await client.Upscale(
-      msg.content,
-      2,
-      msg.id,
-      msg.hash
-    );
-
-    console.log({ msg });
-
-    // Download the generated image
-    const imageResponse = await axios.get(msg2.uri, {
-      responseType: "arraybuffer",
-    });
-
-    // Save the downloaded image to the local folder
-    await fs.promises.writeFile(imagePath, imageResponse.data);
+    await handleMidjourneyCall(req, res);
 
     // Send the generated image
     res.sendFile(path.resolve(imagePath));
   }
 });
-
-
 
 app.get("/stablediffusion/:prompt", async (req, res) => {
   const prompt = req.params.prompt.replace(/-/g, " ");
@@ -150,7 +161,6 @@ app.get("/unsplash/:search", async (req, res) => {
     res.status(500).send("Error fetching image from Unsplash.");
   }
 });
-
 
 const PORT = process.env.PORT || 5683;
 app.listen(PORT, () => {
