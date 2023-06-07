@@ -8,13 +8,6 @@ const midjourney = require("midjourney");
 // dotenv
 require("dotenv").config();
 
-// log the server id, channel id and token
-console.log(
-  `Server ID: ${process.env.SERVER_ID}\nChannel ID: ${
-    process.env.CHANNEL_ID
-  }\nToken: ${process.env.SALAI_TOKEN}`
-)
-
 // TODO: if any of the ID or TOKEN is a number then stringify it
 const client = new midjourney.Midjourney({
   ServerId: String(process.env.SERVER_ID),
@@ -36,17 +29,17 @@ if (!fs.existsSync(IMAGE_FOLDER)) {
 // The best at the top!
 app.get("/:prompt", async (req, res) => {
   console.log("req.params: ", req.params);
-
   const prompt = req.params.prompt.replace(/-/g, " ");
-  console.log("prompt: ", prompt);
 
   // Define the image path
   const imagePath = path.join(IMAGE_FOLDER, `${req.params.prompt}.png`);
 
   // Check if the image already exists
   if (fs.existsSync(imagePath)) {
+    console.log("Returning existing image");
     res.sendFile(path.resolve(imagePath));
   } else {
+    console.log("Generating new image");
     const msg = await client.Imagine(prompt);
 
     const msg2 = await client.Upscale(
