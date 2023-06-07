@@ -8,6 +8,13 @@ const midjourney = require("midjourney");
 // dotenv
 require("dotenv").config();
 
+// log the server id, channel id and token
+console.log(
+  `Server ID: ${process.env.SERVER_ID}\nChannel ID: ${
+    process.env.CHANNEL_ID
+  }\nToken: ${process.env.SALAI_TOKEN}`
+)
+
 const client = new midjourney.Midjourney({
   ServerId: process.env.SERVER_ID,
   ChannelId: process.env.CHANNEL_ID,
