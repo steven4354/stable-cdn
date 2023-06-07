@@ -3,9 +3,18 @@ const fs = require("fs");
 const path = require("path");
 const sharp = require("sharp");
 const axios = require("axios");
+const midjourney = require("midjourney");
 
 // dotenv
 require("dotenv").config();
+
+const client = new midjourney.Midjourney({
+  ServerId: process.env.SERVER_ID,
+  ChannelId: process.env.CHANNEL_ID,
+  SalaiToken: process.env.SALAI_TOKEN,
+  Debug: true,
+  Ws: true,
+});
 
 const app = express();
 
@@ -99,6 +108,20 @@ app.get("/unsplash/:search", async (req, res) => {
     console.error("Error fetching image from Unsplash:", error);
     res.status(500).send("Error fetching image from Unsplash.");
   }
+});
+
+app.get("/midjourney/:prompt", async (req, res) => {
+  console.log("req.params: ", req.params);
+
+  const prompt = req.params.prompt.replace(/-/g, " ");
+  console.log("prompt: ", prompt);
+
+  const msg = await client.Imagine("A little pink elephant");
+
+  console.log({ msg });
+
+  // Redirect the user to the msg.uri
+  res.redirect(msg.uri);
 });
 
 const PORT = process.env.PORT || 5683;
