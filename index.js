@@ -19,7 +19,7 @@ const client = new midjourney.Midjourney({
 
 const app = express();
 
-const IMAGE_FOLDER = "./images";
+const IMAGE_FOLDER = process.env.PRODUCTION ? "/var/lib/data" : "./images";
 
 // Ensure the image folder exists
 if (!fs.existsSync(IMAGE_FOLDER)) {
