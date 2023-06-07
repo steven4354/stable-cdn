@@ -32,32 +32,37 @@ app.get("/:prompt", async (req, res) => {
   const prompt = req.params.prompt.replace(/-/g, " ");
   console.log("prompt: ", prompt);
 
-  const msg = await client.Imagine(prompt);
-
-  const msg2 = await client.Upscale(
-    msg.content,
-    2,
-    msg.id,
-    msg.hash
-  );
-
-  console.log({ msg, msg2 });
-
-  // Define the image folder and image path
-  const IMAGE_FOLDER = 'images';
+  // Define the image path
   const imagePath = path.join(IMAGE_FOLDER, `${req.params.prompt}.png`);
 
-  // Download the generated image
-  const imageResponse = await axios.get(msg2.uri, {
-    responseType: "arraybuffer",
-  });
+  // Check if the image already exists
+  if (fs.existsSync(imagePath)) {
+    res.sendFile(path.resolve(imagePath));
+  } else {
+    const msg = await client.Imagine(prompt);
 
-  // Save the downloaded image to the local folder
-  await fs.promises.writeFile(imagePath, imageResponse.data);
+    const msg2 = await client.Upscale(
+      msg.content,
+      2,
+      msg.id,
+      msg.hash
+    );
 
-  // Redirect the user to the local image path
-  res.redirect(`/${IMAGE_FOLDER}/${req.params.prompt}.png`);
+    console.log({ msg });
+
+    // Download the generated image
+    const imageResponse = await axios.get(msg2.uri, {
+      responseType: "arraybuffer",
+    });
+
+    // Save the downloaded image to the local folder
+    await fs.promises.writeFile(imagePath, imageResponse.data);
+
+    // Send the generated image
+    res.sendFile(path.resolve(imagePath));
+  }
 });
+
 
 
 app.get("/stablediffusion/:prompt", async (req, res) => {
