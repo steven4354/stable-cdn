@@ -25,7 +25,42 @@ if (!fs.existsSync(IMAGE_FOLDER)) {
   fs.mkdirSync(IMAGE_FOLDER);
 }
 
+// The best at the top!
 app.get("/:prompt", async (req, res) => {
+  console.log("req.params: ", req.params);
+
+  const prompt = req.params.prompt.replace(/-/g, " ");
+  console.log("prompt: ", prompt);
+
+  const msg = await client.Imagine(prompt);
+
+  const msg2 = await client.Upscale(
+    msg.content,
+    2,
+    msg.id,
+    msg.hash
+  );
+
+  console.log({ msg, msg2 });
+
+  // Define the image folder and image path
+  const IMAGE_FOLDER = 'images';
+  const imagePath = path.join(IMAGE_FOLDER, `${req.params.prompt}.png`);
+
+  // Download the generated image
+  const imageResponse = await axios.get(msg2.uri, {
+    responseType: "arraybuffer",
+  });
+
+  // Save the downloaded image to the local folder
+  await fs.promises.writeFile(imagePath, imageResponse.data);
+
+  // Redirect the user to the local image path
+  res.redirect(`/${IMAGE_FOLDER}/${req.params.prompt}.png`);
+});
+
+
+app.get("/stablediffusion/:prompt", async (req, res) => {
   const prompt = req.params.prompt.replace(/-/g, " ");
   console.log("prompt: ", prompt);
 
@@ -110,19 +145,6 @@ app.get("/unsplash/:search", async (req, res) => {
   }
 });
 
-app.get("/midjourney/:prompt", async (req, res) => {
-  console.log("req.params: ", req.params);
-
-  const prompt = req.params.prompt.replace(/-/g, " ");
-  console.log("prompt: ", prompt);
-
-  const msg = await client.Imagine("A little pink elephant");
-
-  console.log({ msg });
-
-  // Redirect the user to the msg.uri
-  res.redirect(msg.uri);
-});
 
 const PORT = process.env.PORT || 5683;
 app.listen(PORT, () => {
