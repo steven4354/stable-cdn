@@ -26,6 +26,11 @@ if (!fs.existsSync(IMAGE_FOLDER)) {
   fs.mkdirSync(IMAGE_FOLDER);
 }
 
+// Semaphore implementation
+const maxConcurrentCalls = 2;
+let currentCalls = 0;
+const waitingCalls = [];
+
 async function handleMidjourneyCall(req, res) {
   if (currentCalls >= maxConcurrentCalls) {
     await new Promise((resolve) => waitingCalls.push(resolve));
