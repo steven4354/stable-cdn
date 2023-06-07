@@ -15,10 +15,11 @@ console.log(
   }\nToken: ${process.env.SALAI_TOKEN}`
 )
 
+// TODO: if any of the ID or TOKEN is a number then stringify it
 const client = new midjourney.Midjourney({
-  ServerId: process.env.SERVER_ID,
-  ChannelId: process.env.CHANNEL_ID,
-  SalaiToken: process.env.SALAI_TOKEN,
+  ServerId: String(process.env.SERVER_ID),
+  ChannelId: String(process.env.CHANNEL_ID),
+  SalaiToken: String(process.env.SALAI_TOKEN),
   Debug: true,
   Ws: true,
 });
